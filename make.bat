@@ -1,9 +1,9 @@
 @echo off
 title Auto Make
 
-set FNAME=luzhibo
+set FNAME=liveGet
 set PNAME=github.com\ggggle\%FNAME%
-set GPATH=https://github.com/ggggle/luzhibo.git
+set GPATH=https://github.com/ggggle/liveGet.git
 set CPATH=%cd%
 set BPATH=%~dp0
 
