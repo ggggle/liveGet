@@ -1,0 +1,15 @@
+language: go
+go:
+    - 1.8.3
+before_script:
+    - go get github.com/tcnksm/ghr
+    - go get github.com/aktau/github-release
+script:
+    - cd $HOME/gopath/src/github.com/Baozisoftware/luzhibo
+    - chmod +x ./make.sh
+    - ./make.sh
+    - ghr -u Baozisoftware -t $GITHUB_TOKEN -replace latest releases/
+    - github-release edit -u Baozisoftware -s $GITHUB_TOKEN -r luzhibo -t latest -n "Ver `cat ver`" -d "`cat changelog`"
+    - exit 0
+notifications:
+    email: false

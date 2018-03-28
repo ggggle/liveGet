@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>录直播 - WebUI</title>
+    <link href="favicon.ico" rel="bookmark" type="image/x-icon"/>
+    <link href="favicon.ico" rel="icon" type="image/x-icon"/>
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="flv.min.js"></script>
+    <script language='javascript'>
+        function addTaskAction() {
+            $("button").attr("disabled", "disabled");
+            $("#addTaskDialog").modal('hide');
+            if ($("#addTask_pathg").attr("hidden") == "hidden") {
+                addTaskCheck();
+            } else
+                doAddTask();
+            return false;
+        }
+
+        function addTasksAction() {
+            $("button").attr("disabled", "disabled");
+            $("#addTasksDialog").modal('hide');
+            var urls = $("#addTask_urls").val();
+            urls = encodeURIComponent(urls);
+            if (urls == "") {
+                showTip("至少输入一行地址.", 2);
+                $("button").removeAttr("disabled");
+            } else {
+                showTip("正在添加批量任务...", 0);
+                doAjax("addex", "urls=" + urls, function (ret) {
+                        if (ret > 0) {
+                            showTip("成功添加" + ret + "条任务.", 1);
+                        } else {
+                            showTip("没有成功添加任务.", 3);
+                        }
+                        $("button").removeAttr("disabled");
+                        showTasks(true);
+                    },
+                    function () {
+                        showTip("请求后端失败.", 3);
+                        $("button").removeAttr("disabled");
+                    });
+            }
+            return false;
+        }
+
+        var theTasks = null;
+        function showTasks(s) {
+            var hta = false;
+            $("button").attr("disabled", "disabled");
+            $("#tasklist").html("");
+            var cf = 0;
+            if (s == true)
+                cf = 1000;
+            setTimeout(function () {
+                showTip("正在获取任务列表...", 0);
+                doAjax("tasks", "", function (ret) {
+                        var j = JSON.parse(ret);
+                        if (!j.E) {
+                            theTasks = j.Tasks;
+                            var rows = "";
+                            var row = "";
+                            for (var i = 0; i < theTasks.length; i++) {
+                                var v = theTasks[i];
+                                var inf = v.LiveInfo;
+                                t = "[无数据]";
+                                if (inf != null)
+                                    var t = inf.RoomTitle;
+                                s = v.Run ? "<div class=\"progress progress-striped active\"><div class=\"progress-bar progress-success\" style=\"width: 100%;\"></div></div>" : "<div class=\"progress progress-striped\"><div class=\"progress-bar progress-bar-danger\" role=\"progressbar\" style=\"width: 100%;\"></div></div>";
+                                var m = v.M ? "循环" : "普通";
+                                var l = !v.Run ? "未运行" : v.TimeLong;
+                                var ls = v.Live ? "<span class=\"glyphicon glyphicon-ok-circle\" />" : "<span class=\"glyphicon glyphicon-remove-circle\" />";
+                                var buttons = "<th>";
+                                if (v.Run)
+                                    buttons += "<button onclick=\"stopBtnEvt(" + (i + 1) + ")\" class=\"btn btn-warning\" type=\"button\"><span class=\"glyphicon glyphicon-stop\" /> 停止</button>\n";
+                                else {
+                                    buttons += "<button onclick=\"startBtnEvt(" + (i + 1) + ")\" class=\"btn btn-success\" type=\"button\"><span class=\"glyphicon glyphicon-play\" /> 开始</button>\n";
+                                    buttons += "<button onclick=\"delBtnEvt(" + (i + 1) + ")\" class=\"btn btn-danger\" type=\"button\"><span class=\"glyphicon glyphicon-remove\" /> 删除</button>\n";
+                                }
+                                if (!hta) {
+                                    if (v.Files != null) {
+                                        if (v.Files.length == 1) {
+                                            buttons += "<button onclick=\"down(" + (i + 1) + ",0)\" class=\"btn btn-primary\" type=\"button\"><span class=\"glyphicon glyphicon-download\" /> 下载</button>\n";
+                                            if (v.FileExt == "flv")
+                                                buttons += "<button onclick=\"play(" + (i + 1) + ",0)\" class=\"btn btn-primary\" type=\"button\"><span class=\"glyphicon glyphicon-play-circle\" />  播放</button>\n";
+                                        } else {
+                                            var dlBtn = "<div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\"><span class=\"glyphicon glyphicon-download\" /> 下载 <span class=\"caret\"></span></button><ul class=\"dropdown-menu\" role=\"menu\">";
+                                            var pyBtn = "<div class=\"btn-group\"><button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\"><span class=\"glyphicon glyphicon-play-circle\" /> 播放 <span class=\"caret\"></span></button><ul class=\"dropdown-menu\" role=\"menu\">";
+                                            for (var x = 0; x < v.Files.length; x++) {
+                                                dlBtn += "<li onclick=\"down(" + (i + 1) + "," + (x + 1) + ")\"><button class=\"btn btn-link\"><span class=\"glyphicon glyphicon-download-alt\" /> 分段" + (x + 1) + "</a></li>";
+                                                pyBtn += "<li onclick=\"play(" + (i + 1) + "," + (x + 1) + ")\"><button class=\"btn btn-link\"><span class=\"glyphicon glyphicon-play\" /> 分段" + (x + 1) + "</a></li>";
+                                            }
+                                            dlBtn += "</ul></div>\n";
+                                            pyBtn += "</ul></div>\n";
+                                            buttons += dlBtn;
+                                            if (v.FileExt == "flv") {
+                                                buttons += pyBtn;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (v.LiveInfo != null)
+                                    buttons += "<button onclick=\"infoBtnEvt(" + (i + 1) + ")\" class=\"btn btn-info\" type=\"button\"><span class=\"glyphicon glyphicon-option-horizontal\" /> 详情</button>\n";
+                                buttons += "</th>";
+                                row = "<tr>";
+                                row += "<td>" + (i + 1) + "</td>";
+                                row += "<td><a target=\"_blank\" href=\"" + v.SiteURL + "\"  title=\"" + v.Site + "\"><img height=\"16\" width=\"16\" src=" + v.SiteIcon + " /></a></td>";
+                                row += "<td>" + ls + "</td>";
+                                row += "<td>" + m + "</td>";
+                                row += "<td>" + s + "</td>";
+                                row += "<td>" + l + "</td>";
+                                row += "<td>" + t + "</td>";
+                                row += buttons;
+                                row += "</tr>";
+                                rows += row;
+                            }
+                            $("#tasklist").html(rows);
+                        }
+                        if (j.Err) {
+                            showTip("获取任务列表完成,但发生了错误.", 2);
+                        } else
+                            showTip("获取任务列表成功.", 1);
+                        $("button").removeAttr("disabled");
+                    },
+                    function () {
+                        showTip("获取任务列表失败.", 3);
+                        $("button").removeAttr("disabled");
+                    });
+
+            }, cf);
+        }
+
+        function showSupports() {
+            showTip("正在获取平台支持信息...", 0);
+            doAjax("supports", "",
+                function (ret) {
+                    ret = ret.replace(/\*/g, "<span style=\"color: red; \">*</span>");
+                    $("#sup").removeAttr("hidden");
+                    $("#supt").html(ret);
+                    showTip("获取平台支持信息成功.", 1);
+                },
+                function () {
+                    showTip("获取平台支持信息失败.", 2);
+                });
+
+        }
+
+        $(document).ready(function () {
+            showTip("正在检查版本更新...", 0);
+            doAjax("ver", "",
+                function (ret) {
+                    var arr = ret.split("|");
+                    $("#tver").text("(Ver " + arr[0] + ")");
+                    if (arr[1] != "null") {
+                        $("#uver").text("发现新版本(Ver " + arr[1] + ")");
+                        $("#uver_tip").removeAttr("hidden");
+                        $("#uver_a").click(function () {
+                            $("#uver_tip").attr("hidden", "hidden");
+                            $("button").attr("disabled", "disabled");
+                            showTip("自动更新中...", 1);
+                            doAjax("update", "", function (ret) {
+                                if (ret == "true")
+                                    showTip("自动更新成功,下次启动将使用新版.", 1);
+                                else
+                                    showTip("自动更新失败.", 2);
+                                $("button").removeAttr("disabled");
+                            }, function () {
+                                showTip("请求后端失败.", 3);
+                                $("button").removeAttr("disabled");
+                            });
+                        });
+                    }
+                    showTip("获取版本信息成功.", 1);
+                    showSupports();
+                    showTasks();
+                },
+                function () {
+                    showTip("获取版本信息失败.", 2);
+                    showSupports();
+                    showTasks();
+                }
+            )
+            ;
+        })
+        ;
+
+        function doAddTask() {
+            var url = $("#addTask_url").val();
+            url = encodeURIComponent(url);
+            var path = $("#addTask_path").val();
+            var ext = $("#addTask_fileext").val();
+            var m = $("#addTask_m").is(':checked');
+            var r = $("#addTask_run").is(':checked');
+            var tp = path;
+            if (!m)
+                tp += "." + ext;
+            checkPathExist(tp, function (e) {
+                if (e != null) {
+                    if (e == true) {
+                        alert("文件(路径)已存在,请更换.");
+                        setTimeout(function () {
+                            $("button").removeAttr("disabled");
+                            $("#addTaskDialog").modal('show');
+                        }, 500);
+                        return;
+                    }
+                    showTip("正在添加任务...", 0);
+                    url = encodeURIComponent(url);
+                    tp = encodeURIComponent(tp);
+                    doAjax("add", "url=" + url + "&path=" + tp + "&m=" + m + "&run=" + r,
+                        function (ret) {
+                            if (ret == "ok")
+                                showTip("添加任务成功.", 1);
+                            else
+                                showTip("添加任务失败.", 3);
+                            showTasks(true);
+                        },
+                        function () {
+                            showTip("请求后端失败.", 3);
+                            showTasks(true);
+                        });
+                } else
+                    $("button").removeAttr("disabled");
+            });
+        }
+
+        function checkPathExist(path, cb) {
+            showTip("正在获取路径信息...", 0);
+            doAjax("exist", "path=" + path,
+                function (ret) {
+                    showTip("路径信息获取成功.", 1);
+                    cb(ret == "exist");
+                },
+                function () {
+                    showTip("路径信息获取失败.", 3);
+                    cb(null);
+                });
+        }
+
+        function addTaskCheck() {
+            showTip("正在获取地址信息...", 0);
+            var url = $("#addTask_url").val();
+            url = encodeURIComponent(url);
+            doAjax("check", "url=" + url,
+                function (ret) {
+                    var j = JSON.parse(ret);
+                    if (!j.Pass) {
+                        showTip("不支持的地址.", 2);
+                        $("button").removeAttr("disabled");
+                    } else if (j.Has) {
+                        if (!j.Support) {
+                            showTip("当前系统中没有FFmpeg,不支持添加此地址.(<strong><a target=\"_noblank\" href=\"https://ffmpeg.org/download.html\" class=\"btn btn-link\">点此下载</a></strong>)", 2);
+                            $("button").removeAttr("disabled");
+                            return;
+                        }
+                        if (!j.Live) {
+                            $("#addTask_m").prop("checked", true);
+                            $("#addTask_m").attr("disabled", "disabled");
+                            $("#addTask_mg").attr("class", "checkbox disabled");
+                        }
+                        $("#addTask_path").val(j.Path);
+                        $("#addTask_fileext").val(j.FileExt);
+                        $("#addTask_url").attr("readonly", 'readonly');
+                        $("#addTask_pathg").removeAttr("hidden");
+                        setTimeout(function () {
+                            $("button").removeAttr("disabled");
+                            $("#addTaskDialog").modal('show');
+                        }, 500);
+                    } else {
+                        showTip("不存在的房间.", 2);
+                        $("button").removeAttr("disabled");
+                    }
+                },
+                function () {
+                    showTip("获取地址信息失败.", 3);
+                    $("button").removeAttr("disabled");
+                });
+        }
+
+        function startBtnEvt(o) {
+            if (theTasks[o - 1].Files != null && !confirm("文件(路径)已存在,是否覆盖并继续?"))
+                return;
+            $("button").attr("disabled", "disabled");
+            showTip("正在开始任务...", 0);
+            doAjax("start", "id=" + o,
+                function (ret) {
+                    if (ret == "ok")
+                        showTip("开始任务成功.", 1);
+                    else
+                        showTip("开始任务失败.", 3);
+                    showTasks(true);
+                },
+                function () {
+                    showTip("请求后端失败.", 3);
+                    showTasks(true);
+                });
+        }
+
+        function stopBtnEvt(o) {
+            if (confirm("确定要停止此任务?")) {
+                $("button").attr("disabled", "disabled");
+                showTip("正在停止任务...", 0);
+                doAjax("stop", "id=" + o, function (ret) {
+                        if (ret == "ok")
+                            showTip("停止任务成功.", 1);
+                        else
+                            showTip("停止任务失败.", 3);
+                        showTasks(true);
+                    },
+                    function () {
+                        showTip("请求后端失败.", 3);
+                        showTasks(true);
+                    });
+            }
+        }
+
+        function delBtnEvt(o) {
+            if (confirm("确定要删除此任务?")) {
+                var f = confirm("删除文件(路径)?");
+                $("button").attr("disabled", "disabled");
+                showTip("正在删除任务...", 0);
+                doAjax("del", "id=" + o + "&f=" + f, function (ret) {
+                        if (ret == "ok")
+                            showTip("删除任务成功.", 1);
+                        else
+                            showTip("删除任务失败.", 3);
+                        showTasks(true);
+                    },
+                    function () {
+                        showTip("请求后端失败.", 3);
+                        showTasks(true);
+                    });
+            }
+        }
+
+        function infoBtnEvt(o) {
+            var v = theTasks[o - 1];
+            var i = v.LiveInfo;
+            $("#info_url").val(v.URL);
+            $("#info_start").val(v.Run ? v.StartTime : "未开始");
+            $("#info_index").val(v.Index);
+            $("#info_path").val(v.Path);
+            $("#info_live").attr('hidden', "hidden");
+            if (v.Live && v.Run) {
+                $("#info_live").removeAttr('hidden');
+                $("#info_nick").val(i.LiveNick);
+                $("#info_d").val(i.RoomDetails);
+                $("#info_i").attr("src", i.LivingIMG);
+            }
+            $("#info_ui").modal('show');
+        }
+
+        function down(o, s) {
+            var u = "/ajax?act=get&id=" + o;
+            if (s != 0)
+                u += "&sub=" + s;
+            window.location.href = u;
+        }
+
+        function play(o, s) {
+            var u = "/ajax?act=get&id=" + o;
+            if (s != 0)
+                u += "&sub=" + s;
+            var flvPlayer = flvjs.createPlayer({
+                type: "flv",
+                url: u
+            });
+            $("#player_ui").modal('show').on("hide.bs.modal", function () {
+                flvPlayer.unload();
+            });
+            if (flvjs.isSupported()) {
+                var videoElement = document.getElementById("videoElement");
+                flvPlayer.attachMediaElement(videoElement);
+                flvPlayer.load();
+                flvPlayer.play();
+            }
+        }
+
+        var tips = 0;
+
+        function showTip(text, m) {
+            var c = "label label-";
+            switch (m) {
+                case 0:
+                    c += "info";
+                    break;
+                case 1:
+                    c += "success";
+                    break;
+                case 2:
+                    c += "warning";
+                    break;
+                case 3:
+                    c += "danger";
+            }
+            $("#tiptext").attr("class", c);
+            $("#tiptext").html(text);
+            tips++;
+            setTimeout(function () {
+                tips--;
+                if (tips == 0) {
+                    $("#tiptext").attr("class", "label label-info");
+                    $("#tiptext").html("");
+                }
+            }, 3000);
+        }
+
+        function showAddtaskUI(m) {
+            if (m == true) {
+                $("#addTask_urls").val("");
+                $("#addTasksDialog").modal('show');
+            } else {
+                $("#addTask_url").val("");
+                $("#addTask_pathg").attr("hidden", "hidden");
+                $("#addTask_url").removeAttr("readonly");
+                $("#addTask_mg").attr("class", "checkbox");
+                $("#addTask_m").removeAttr("disabled");
+                $("#addTask_run").prop("checked", true);
+                $("#addTask_m").prop("checked", false);
+                $("#addTaskDialog").modal('show');
+            }
+        }
+
+        function doAjax(act, args, s, e, c, t) {
+            if (t == undefined)
+                t = -1;
+            if (t != undefined && args != "")
+                args = "&" + args;
+            $.ajax({
+                url: "/ajax?act=" + act + args + "&_=" + Math.random(),
+                success: function (ret) {
+                    if (s != undefined)
+                        s(ret);
+                },
+                error: function () {
+                    if (e != undefined)
+                        e();
+                },
+                complete: function () {
+                    if (c != undefined)
+                        c();
+                },
+                timeout: t
+            });
+        }
+
+        function quit() {
+            if (confirm("退出后将停止所有正在运行的任务,确定退出?")) {
+                $("button").attr("disabled", "disabled");
+                showTip("正在退出...", 0);
+                doAjax("quit", "", function (ret) {
+                    if (ret == "ok") {
+                        showTip("请求已送达,3秒后关闭本窗口...", 2);
+                        setTimeout(function () {
+                            window.close();
+                        }, 3000)
+                    }
+                }, function () {
+                    showTip("请求后端失败.", 3);
+                    $("button").removeAttr("disabled");
+                });
+            }
+        }
+
+        function showLogs() {
+            $("button").attr("disabled", "disabled");
+            showTip("正在获取运行日志...", 0);
+            doAjax("log", "", function (ret) {
+                $("#logs").val(ret);
+                $("#logDialog").modal('show');
+                $("button").removeAttr("disabled");
+            }, function () {
+                showTip("请求后端失败.", 3);
+                $("button").removeAttr("disabled");
+            });
+        }
+    </script>
+</head>
+
+<body>
+<div class="container-fluid ">
+    <div id="uver_tip" class="alert alert-info" style="margin:auto auto;width:30%;text-align: center"
+         hidden="hidden">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <h4 id="uver"></h4>
+        <strong><a id="uver_a" class="btn btn-link">点此更新</a></strong>
+    </div>
+    <h4 style="text-align: center">
+        <span class="label label-success" id="tiptext"></span>
+    </h4>
+    <div class="row-fluid">
+        <div class="span12 ">
+            <div class="page-header ">
+                <h1><span class="glyphicon glyphicon-facetime-video"></span> 录直播
+                    <small id="tver"></small>
+                    <div style="float:right">
+                        <button class="btn btn-mini btn-info" onclick="showLogs()" disabled="disabled"><span
+                                class="glyphicon glyphicon-tag"></span> 查看日志
+                        </button>
+                        <button class="btn btn-mini btn-danger" type="button" onclick="quit()"><span
+                                class="glyphicon glyphicon-log-out"></span> 退出程序
+                        </button>
+                    </div>
+                </h1>
+            </div>
+            <div style="text-align:center">
+                <h5 id="sup" hidden="hidden" style="color: gray">
+                    已支持的平台:
+                    <span id="supt">
+                    </span>
+                    <br>
+                    (带<span style="color: red; ">*</span>的平台需要FFmpeg)
+                </h5>
+            </div>
+            <div class="btn-group">
+                <button disabled="disabled" class="btn btn-primary" onclick="showAddtaskUI(false)"><span
+                        class="glyphicon glyphicon-plus"></span> 添加任务...
+                </button>
+                <button disabled="disabled" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><span
+                        class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button disabled="disabled" class="btn btn-link" onclick="showAddtaskUI(true)"><span
+                                class="glyphicon glyphicon-plus"></span> 批量添加...
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <button class="btn btn-default" onclick="showTasks()" disabled="disabled"><span
+                    class="glyphicon glyphicon-refresh"></span> 刷新列表
+            </button>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th><span class="glyphicon glyphicon-minus"></span> 任务编号</th>
+                    <th><span class="glyphicon glyphicon-hdd"></span> 直播平台</th>
+                    <th><span class="glyphicon glyphicon-play-circle"></span> 开播状态</th>
+                    <th><span class="glyphicon glyphicon-flag"></span> 任务模式</th>
+                    <th><span class="glyphicon glyphicon-stats"></span> 运行状态</th>
+                    <th><span class="glyphicon glyphicon-time"></span> 运行时长</th>
+                    <th><span class="glyphicon glyphicon-book"></span> 房间标题</th>
+                    <th><span class="glyphicon glyphicon-hand-right"></span> 其他操作</th>
+                </tr>
+                </thead>
+                <tbody id="tasklist">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--添加任务遮罩层-->
+<div class="modal fade" id="addTaskDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form onsubmit="return addTaskAction()">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        ×
+                    </button>
+                    <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span> 添加任务</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-film"></span> 直播地址:</label>
+                        <label for="addTask_url"></label><input type="url" class="form-control" id="addTask_url"
+                                                                required="required"/>
+                    </div>
+                    <div id="addTask_pathg" hidden="hidden">
+                        <div class="form-group">
+                            <label><span class="glyphicon glyphicon-folder-open"></span>
+                                保存路径(文件名,自动添加后缀.):</label>
+                            <label for="addTask_path"></label><input type="text" class="form-control"
+                                                                     id="addTask_path"
+                                                                     required="required" value="#"/>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox" id="addTask_mg">
+                                <label><input type="checkbox" id="addTask_m"/><span
+                                        class="glyphicon glyphicon-flash"></span> 循环模式</label>
+                            </div>
+                            <div class="checkbox">
+                                <label><input type="checkbox" id="addTask_run"/><span
+                                        class="glyphicon glyphicon-play"></span> 立即开始</label>
+                            </div>
+                        </div>
+                    </div>
+                    <input hidden="hidden" id="addTask_fileext" title=""/>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> 添加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--详情遮罩层-->
+<div class="modal fade" id="info_ui" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-tasks"></span> 任务详情</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label><span class="glyphicon glyphicon-film"></span> 直播地址:</label>
+                    <label for="info_url"></label><input class="form-control" id="info_url" readonly="readonly"/>
+                </div>
+                <div class="form-group">
+                    <label><span class="glyphicon glyphicon-time"></span> 开始时间:</label>
+                    <label for="info_start"></label><input type="text" class="form-control" id="info_start"
+                                                           readonly="readonly"/>
+                </div>
+                <div class="form-group">
+                    <label><span class="glyphicon glyphicon-file"></span> 已有文件:</label>
+                    <label for="info_index"></label><input type="text" class="form-control" id="info_index"
+                                                           readonly="readonly"/>
+                </div>
+                <div class="form-group">
+                    <label><span class="glyphicon glyphicon-folder-open"></span> 保存路径:</label>
+                    <label for="info_path"></label><input type="text" class="form-control" id="info_path"
+                                                          readonly="readonly"/>
+                </div>
+                <br/>
+                <div id="info_live" hidden="hidden">
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-user"></span> 主播昵称:</label>
+                        <label for="info_nick"></label><input type="text" class="form-control" id="info_nick"
+                                                              readonly="readonly"/>
+                    </div>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-picture"></span> 直播截图:</label>
+                        <br/>
+                        <img id="info_i" src="" width="320" height="180"/>
+                    </div>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-pencil"></span> 房间说明:</label>
+                        <textarea class="form-control" id="info_d" readonly="readonly" rows="5" title=""></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--批量添加遮罩层-->
+<div class="modal fade" id="addTasksDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form onsubmit="return addTasksAction()">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        ×
+                    </button>
+                    <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span> 批量添加</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-film"></span> 直播地址(一行一个):</label>
+                        <label for="addTask_url"></label><textarea class="form-control" id="addTask_urls"
+                                                                   rows="5" title=""></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> 添加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--运行日志遮罩层-->
+<div class="modal fade" id="logDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form onsubmit="return addTasksAction()">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        ×
+                    </button>
+                    <h4 class="modal-title"><span class="glyphicon glyphicon-tags"></span> 运行日志</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <textarea class="form-control" id="logs" rows="25" title="" readonly="readonly"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--播放器遮罩层-->
+<div class="modal fade" id="player_ui" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-play"></span> 播放器</h4>
+            </div>
+            <div class="embed-responsive embed-responsive-16by9">
+                <video id="videoElement" width="640" height="360" controls="controls"></video>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
