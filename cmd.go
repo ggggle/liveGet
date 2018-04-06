@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ggggle/luzhibo/api"
+	"github.com/ggggle/liveGet/api"
 	//"github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/pkg/browser"
 )

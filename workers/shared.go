@@ -3,7 +3,7 @@ package workers
 import (
 	"os"
 	"path"
-	"github.com/ggggle/luzhibo/api/getters"
+	"github.com/ggggle/liveGet/api/getters"
 )
 
 //Worker 工作接口

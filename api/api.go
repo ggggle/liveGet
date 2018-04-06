@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ggggle/luzhibo/api/getters"
+	"github.com/ggggle/liveGet/api/getters"
 )
 
 //LuzhiboAPI API object

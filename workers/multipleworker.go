@@ -5,8 +5,8 @@ import (
     "fmt"
     "os"
     "time"
-    "github.com/ggggle/luzhibo/api"
-    "github.com/ggggle/luzhibo/api/getters"
+    "github.com/ggggle/liveGet/api"
+    "github.com/ggggle/liveGet/api/getters"
     "strings"
 )
 

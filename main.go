@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/Baozisoftware/GoldenDaemon"
-	"github.com/ggggle/luzhibo/api"
-	"github.com/ggggle/luzhibo/api/getters"
-	"github.com/ggggle/luzhibo/workers"
+	"github.com/ggggle/liveGet/api"
+	"github.com/ggggle/liveGet/api/getters"
+	"github.com/ggggle/liveGet/workers"
 )
 
 const ver = 2017091000

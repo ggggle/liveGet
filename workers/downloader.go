@@ -6,9 +6,9 @@ import (
 	"os"
 	"path"
 	nhttp"github.com/Baozisoftware/golibraries/http"
-	"github.com/ggggle/luzhibo/api/getters"
+	"github.com/ggggle/liveGet/api/getters"
 	"bytes"
-    "github.com/ggggle/luzhibo/api"
+    "github.com/ggggle/liveGet/api"
 )
 
 //下载器

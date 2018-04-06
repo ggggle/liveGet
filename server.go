@@ -19,7 +19,7 @@ import (
 
 	"github.com/Baozisoftware/GoldenDaemon"
 	nhttp "github.com/Baozisoftware/golibraries/http"
-	"github.com/ggggle/luzhibo/api"
+	"github.com/ggggle/liveGet/api"
 	"github.com/inconshreveable/go-update"
 )
 
