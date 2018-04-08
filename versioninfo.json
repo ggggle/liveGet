@@ -2,9 +2,9 @@
 	"FixedFileInfo":
 	{
 		"FileVersion": {
-			"Major": 2017,
-			"Minor": 9,
-			"Patch": 10,
+			"Major": 2018,
+			"Minor": 4,
+			"Patch": 8,
 			"Build": 0
 		},
 		"ProductVersion": {
@@ -23,15 +23,13 @@
 	{
 		"Comments": "",
 		"CompanyName": "",
-		"FileDescription": "Luzhibo App",
+		"FileDescription": "liveGet App",
 		"FileVersion": "",
 		"InternalName": "",
-		"LegalCopyright": "Copyright © 2016-2017 Baozisoftware. All rights reserved",
-		"LegalTrademarks": "Baozisoftware",
 		"OriginalFilename": "",
 		"PrivateBuild": "",
-		"ProductName": "Luzhibo",
-		"ProductVersion": "2017.9.0.0",
+		"ProductName": "liveGet",
+		"ProductVersion": "2018.4.8.0",
 		"SpecialBuild": ""
 	},
 	"VarFileInfo":
