@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	njson"github.com/Baozisoftware/golibraries/json"
+    "github.com/buger/jsonparser"
 )
 
 //panda 熊猫直播
@@ -14,7 +15,25 @@ type panda struct{}
 //Site 实现接口
 func (i *panda) Site() string { return "熊猫直播" }
 
-func (i *panda) GetExtraInfo(string) (info ExtraInfo, err error) { return }
+func (i *panda) GetExtraInfo(room string) (info ExtraInfo, err error) {
+    defer func() {
+        if recover() != nil {
+            err = errors.New("fail get data")
+        }
+    }()
+    url := "http://www.panda.tv/ajax_search?roomid=" + room
+    json, _ := httpGet(url)
+    if len(json) > 0 {
+        errorNo, _ := jsonparser.GetInt([]byte(json), "errno")
+        if 0 == errorNo {
+            jsonparser.ArrayEach([]byte(json), func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+                info.OwnerName, _ = jsonparser.GetString(value, "nickname")
+                info.RoomTitle, _ = jsonparser.GetString(value, "name")
+            }, "data", "items")
+        }
+    }
+    return
+}
 
 //SiteURL 实现接口
 func (i *panda) SiteURL() string {

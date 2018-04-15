@@ -89,6 +89,7 @@ func (i *longzhu) GetLiveInfo(id string) (live LiveInfo, err error) {
 	live = LiveInfo{}
 	url := "http://roomapicdn.plu.cn/room/RoomAppStatusV2?domain=" + id
 	tmp, err := httpGet(url)
+	live.LivingIMG, _ = jsonparser.GetString([]byte(tmp), "RoomScreenshot")
 	json := *(pruseJSON(tmp).JToken("BaseRoomInfo"))
 	nick := json["Name"].(string)
 	title := json["BoardCastTitle"].(string)
@@ -102,7 +103,6 @@ func (i *longzhu) GetLiveInfo(id string) (live LiveInfo, err error) {
 	live.LiveNick = nick
 	live.RoomTitle = title
 	live.RoomDetails = details
-	live.LivingIMG = ""
 	live.VideoURL = video
 	if video == "" {
 		err = errors.New("fail get data")

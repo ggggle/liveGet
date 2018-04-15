@@ -7,7 +7,6 @@ import (
     "time"
     "github.com/ggggle/liveGet/api"
     "github.com/ggggle/liveGet/api/getters"
-    "strings"
 )
 
 //循环模式
@@ -84,14 +83,6 @@ func (i *multipleworker) Restart() (Worker, error) {
 
 //GetTaskInfo 实现接口
 func (i *multipleworker) GetTaskInfo(g bool) (int64, bool, int64, string, *getters.LiveInfo) {
-    if 0 == strings.Compare(i.API.Site, "斗鱼直播") {
-        var r getters.LiveInfo
-        extraInfo, err := i.API.G.GetExtraInfo(i.API.Id)
-        if nil == err {
-            r.RoomTitle = extraInfo.RoomTitle
-            return 2, i.run, i.index, i.dirPath, &r
-        }
-    }
     if i.sw != nil {
         _, _, _, _, r := i.sw.GetTaskInfo(g)
         return 2, i.run, i.index, i.dirPath, r
@@ -117,7 +108,7 @@ func (i *multipleworker) do() {
             b = true
         } else {
             i.index--
-            api.Logger.Print(err.Error() + " " + i.API.Id)
+            //api.Logger.Print(err.Error() + " " + i.API.Id)
         }
         if b {
             i.sw.Start()
@@ -131,7 +122,7 @@ func (i *multipleworker) do() {
                 i.index--
             }
         }
-        api.Logger.Printf("[%s]err code[%d] index[%d]", i.API.Id, ec, i.index)
+        //api.Logger.Printf("[%s]err code[%d] index[%d]", i.API.Id, ec, i.index)
         if ec == 5 {
             api.Logger.Print("ec code5 " + i.API.Id)
             break

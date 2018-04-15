@@ -149,12 +149,12 @@ type LiveInfo struct {
 //获取一些额外信息
 type ExtraInfo struct {
     Site         string   //网站
-    RoomTitle    string   //房间标题
+    RoomTitle    string   //房间标题  youtube_upload
     RoomID       string   //房间id
     CateName     string   //分类
     RoomStatus   string   //直播状态
     StartTime    string   //开始时间
-    OwnerName    string   //主播名
+    OwnerName    string   //主播名  youtube_upload
 }
 
 //Getter 房间/直播信息获取接口

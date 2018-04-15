@@ -5,7 +5,6 @@ import (
     "strings"
     "github.com/buger/jsonparser"
     "strconv"
-    "fmt"
 )
 
 //bilibili Bilibili直播
@@ -65,7 +64,6 @@ func (i *bilibili) GetRoomInfo(url string) (id string, live bool, err error) {
     live_status, err := jsonparser.GetInt([]byte(tmp), "data", "live_status")
     if live_status == 1 {
         live = true
-        fmt.Println(id + " live now")
     } else {
         live = false
     }
@@ -86,7 +84,6 @@ func (i *bilibili) GetLiveInfo(id string) (live LiveInfo, err error) {
     jsonparser.ArrayEach([]byte(tmp), func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
         if videoLinkNum == 1 {
             live.VideoURL, _ = jsonparser.GetString(value, "url")
-            fmt.Println("get live url")
         }
         videoLinkNum++
     }, "durl")

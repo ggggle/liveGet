@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
+    "github.com/buger/jsonparser"
 )
 
 //quanmin 全民直播
@@ -14,7 +15,20 @@ type quanmin struct{}
 //Site 实现接口
 func (i *quanmin) Site() string { return "全民直播" }
 
-func (i *quanmin) GetExtraInfo(string) (info ExtraInfo, err error) { return }
+func (i *quanmin) GetExtraInfo(roomId string) (info ExtraInfo, err error) {
+    defer func() {
+        if recover() != nil {
+            err = errors.New("fail get data")
+        }
+    }()
+    url:= fmt.Sprintf("http://www.quanmin.tv/json/rooms/%s/noinfo.json", roomId)
+    json, _ := httpGet(url)
+    if len(json) > 0 {
+        info.OwnerName, _ = jsonparser.GetString([]byte(json), "nick")
+        info.RoomTitle, _ = jsonparser.GetString([]byte(json), "title")
+    }
+    return
+}
 
 //SiteURL 实现接口
 func (i *quanmin) SiteURL() string {

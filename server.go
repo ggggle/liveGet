@@ -322,7 +322,7 @@ func checkUpdate() string {
 	if updated || updatting {
 		r += "null"
 	} else {
-		data, err := httpGet("https://api.github.com/repos/Baozisoftware/luzhibo/releases/latest")
+		data, err := httpGet("https://api.github.com/repos/ggggle/liveGet/releases/latest")
 		if err == nil {
 			if data != "" {
 				reg, _ := regexp.Compile("Ver (\\d{10})")
@@ -358,7 +358,7 @@ func doUpdate() bool {
 		return true
 	}
 	updatting = true
-	url := fmt.Sprintf("https://github.com/Baozisoftware/luzhibo/releases/download/latest/luzhibo_%s_%s", runtime.GOOS, runtime.GOARCH)
+	url := fmt.Sprintf("https://github.com/ggggle/liveGet/releases/download/latest/luzhibo_%s_%s", runtime.GOOS, runtime.GOARCH)
 	if runtime.GOOS == "windows" {
 		url += ".exe"
 	}
