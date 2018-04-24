@@ -2,9 +2,11 @@ package getters
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
+    "fmt"
+    "strconv"
+    "encoding/hex"
 )
 
 //huya 虎牙直播
@@ -66,22 +68,39 @@ func (i *huya) GetLiveInfo(id string) (live LiveInfo, err error) {
 		}
 	}()
 	live = LiveInfo{RoomID: id}
-	url := "http://m.huya.com/" + id
-	html, err := httpGetWithUA(url, ipadUA)
-	title := getValue(html, "liveRoomName")
-	nick := getValue(html, "ANTHOR_NICK")
-	img := getValue(html, "picURL")
-	reg, _ := regexp.Compile("cid: '(\\d+/\\d+)'")
-	cid := strings.Replace(reg.FindStringSubmatch(html)[1], "/", "_", 1)
-	video := fmt.Sprintf("http://hls.yy.com/%s_100571200.flv", cid)
-	live.LiveNick = nick
-	live.LivingIMG = img
+	url := "http://www.huya.com/" + id
+	html, err := httpGet(url)
+	reg, _ := regexp.Compile("\"channel\":\"*(\\d+)\"*,")
+	channel, _ := strconv.Atoi(reg.FindStringSubmatch(html)[1])
+	reg, _ = regexp.Compile("\"sid\":\"*(\\d+)\"*,")
+	sid, _ := strconv.Atoi(reg.FindStringSubmatch(html)[1])
+	_hex := fmt.Sprintf("0000009E10032C3C4C56066C6976657569660D6765744C6976696E67496E666F7D0000750800010604745265711D0000680A0A0300000000000000001620FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2600361777656226323031377633322E313131302E33266875796146005C0B1300000000%08x2300000000%08x3300000000000000000B8C980CA80C",
+	    channel, sid)
+	_hex = strings.ToUpper(_hex)
+	req_data, _ := hex.DecodeString(_hex)
+	video_content, err := httpPost("http://cdn.wup.huya.com/", string(req_data))
+	print(video_content)
+
+	reg, _ = regexp.Compile(fmt.Sprintf("(%d-%d[^f]+)", channel, sid))
+	video_id := reg.FindStringSubmatch(video_content)[1]
+
+	reg, _ = regexp.Compile("wsSecret=([0-9a-z]{32})")
+	wsSecret := reg.FindStringSubmatch(video_content)[1]
+
+	reg, _ = regexp.Compile("wsTime=([0-9a-z]{8})")
+	wsTime := reg.FindStringSubmatch(video_content)[1]
+
+	reg, _ = regexp.Compile("://(.+\\.(flv|stream)\\.huya\\.com/(hqlive|huyalive))")
+	video_url := reg.FindStringSubmatch(video_content)[1]
+
+	live.VideoURL = fmt.Sprintf("http://%s/%s.flv?wsSecret=%s&wsTime=%s", video_url, video_id, wsSecret, wsTime)
+
+	url = "http://m.huya.com/" + id
+	html, err = httpGetWithUA(url, ipadUA)
+	live.LiveNick = getValue(html, "ANTHOR_NICK")
+	live.LivingIMG = getValue(html, "picURL")
 	live.RoomDetails = ""
-	live.RoomTitle = title
-	live.VideoURL = video
-	if live.VideoURL == "" {
-		err = errors.New("fail get data")
-	}
+	live.RoomTitle = getValue(html, "liveRoomName")
 	return
 }
 

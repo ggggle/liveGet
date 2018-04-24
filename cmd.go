@@ -131,14 +131,14 @@ l1:
 		path = tp
 	}
 	if addTask(oa, path, x, false) {
-		fmt.Print("添加成功,启动?(Y/n):")
+		fmt.Print("添加成功,启动?(y/n):")
 		fmt.Scanf("%s\n", &y)
 		if y == "" || y == "y" {
 			startTask(len(tasks) - 1)
 			fmt.Println("启动成功")
 		}
 	} else {
-		fmt.Print("添加失败,重试?(Y/n):")
+		fmt.Print("添加失败,重试?(y/n):")
 		fmt.Scanf("%s\n", &y)
 		if y == "" || y == "y" {
 			goto l1
