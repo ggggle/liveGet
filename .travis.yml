@@ -8,6 +8,14 @@ script:
     - cd $HOME/gopath/src/github.com/ggggle/liveGet
     - chmod +x ./make.sh
     - ./make.sh
+    - git config --global user.name $GITHUB_NAME
+    - git config --global user.email $GITHUB_EMAIL
+    - git config --global github.token $GITHUB_TOKEN
+    - git tag "`cat ver`"
+    - git push --tags
+    - github-release release -u ggggle -s $GITHUB_TOKEN -r liveGet -t "`cat ver`"
+    - ghr -u ggggle -t $GITHUB_TOKEN -replace "`cat ver`" releases/
+    - github-release edit -u ggggle -s $GITHUB_TOKEN -r liveGet -t "`cat ver`" -n "Ver `cat ver`" -d "`cat changelog`"
     - ghr -u ggggle -t $GITHUB_TOKEN -replace latest releases/
     - github-release edit -u ggggle -s $GITHUB_TOKEN -r liveGet -t latest -n "Ver `cat ver`" -d "`cat changelog`"
     - exit 0
