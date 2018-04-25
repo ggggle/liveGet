@@ -1,6 +1,9 @@
 language: go
 go:
     - 1.9.5
+branches:
+  only:
+  - master
 before_script:
     - go get github.com/tcnksm/ghr
     - go get github.com/aktau/github-release
