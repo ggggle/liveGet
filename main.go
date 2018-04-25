@@ -19,7 +19,7 @@ import (
 	"github.com/ggggle/liveGet/workers"
 )
 
-const ver = 2018042500
+const ver = 2018042400
 const p = "录直播"
 
 var port = 22216
