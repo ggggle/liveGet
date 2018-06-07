@@ -12,7 +12,7 @@ import (
 
 var MIN_FILE_SIZE int64 = 1024 * 128
 
-func touchVideo(fPath string) (int) {
+func TouchVideo(fPath string) (int) {
     cmd := exec.Command("ffmpeg", "-i", fPath)
     w := bytes.NewBuffer(nil)
     cmd.Stderr = w
@@ -30,7 +30,7 @@ func touchVideo(fPath string) (int) {
     return 1 //正常的视频
 }
 
-func combineAudio(fPath string) (output string, ret int) {
+func CombineAudio(fPath string) (output string, ret int) {
     output = fPath + ".mp4"
     cmd := exec.Command("ffmpeg", "-loop", "1", "-i", "/usr/sy_cr.jpg", "-i", fPath,
         "-c:a", "copy", "-c:v", "libx264", "-shortest", output)
@@ -60,10 +60,10 @@ func YoutubeUpload(API *api.LuzhiboAPI, fPath string, retry int) {
         api.Logger.Printf("[%s]长度太短[%d]", fPath, info.Size())
         return
     }
-    if videoRet := touchVideo(fPath); -1 == videoRet {
+    if videoRet := TouchVideo(fPath); -1 == videoRet {
         return
     } else if 0 == videoRet { //纯音频，无法直接上传到youtube，需要加一张图片合成视频
-        combineFile, ret := combineAudio(fPath)
+        combineFile, ret := CombineAudio(fPath)
         if -1 == ret{
             return
         }

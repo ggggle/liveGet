@@ -129,7 +129,8 @@ func (i *multipleworker) do() {
         }
         if i.run {
             if 4 == ec || 6 == ec || 7 == ec {
-                go YoutubeUpload(i.API, fn, 3)
+                //go YoutubeUpload(i.API, fn, 3)
+                go GdriveUpload(i.API, fn, 3)
                 switch ec {
                 case 4: //get下载过程中网络问题导致断开
                     api.Logger.Print("下载数据错误,立即重试")
@@ -149,7 +150,8 @@ func (i *multipleworker) do() {
         }
     }
     if !i.run {
-        go YoutubeUpload(i.API, fn, 3)
+        //go YoutubeUpload(i.API, fn, 3)
+        go GdriveUpload(i.API, fn, 3)
         i.ch <- true
     }
     i.run = false
