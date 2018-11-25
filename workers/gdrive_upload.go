@@ -111,7 +111,7 @@ func GdriveUpload(API *api.LuzhiboAPI, fPath string, retry int) {
         } else {
             api.Logger.Print(uploadRet)
             if retry <= 0 {
-                tmp := fmt.Sprintf("gdrive -upload -p %s --name %s --delete %s", parentID, fileName, fPath)
+                tmp := fmt.Sprintf("gdrive upload -p %s --name %s --delete %s", parentID, fileName, fPath)
                 api.Logger.Printf("上传cmd{%s}", tmp)
                 return
             }

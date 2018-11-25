@@ -153,7 +153,7 @@ func httpGetResp(url string, useProxy bool) (resp *http.Response, err error) {
 	if err == nil {
 		client := nhttp.NewHttpClient()
 		if useProxy{
-		    client.SetProxy(Proxy)
+		    // client.SetProxy(Proxy)
         }
 		client.SetResponseHeaderTimeout(30)
 		client.SetBodyTimeout(300)
