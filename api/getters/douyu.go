@@ -86,6 +86,10 @@ func (i *douyu) GetRoomInfo(url string) (id string, live bool, err error) {
                 live = true
             } else {
                 live = false
+                online, _ := jsonparser.GetInt([]byte(json), "data", "online")
+                if online > 0 {
+                    live = true
+                }
             }
         }
     }
