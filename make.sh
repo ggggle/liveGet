@@ -58,6 +58,7 @@ go get github.com/dkua/go-ico
 go get gopkg.in/Knetic/govaluate.v3
 go get github.com/lxn/win
 go get github.com/inconshreveable/go-update
+go get github.com/buger/jsonparser
 if [ "$1" = "init" ]; then
 	DONE
 fi
