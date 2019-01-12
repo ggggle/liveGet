@@ -4,6 +4,7 @@ go:
 branches:
   only:
   - master
+install: true
 before_script:
     - go get github.com/tcnksm/ghr
     - go get github.com/aktau/github-release
