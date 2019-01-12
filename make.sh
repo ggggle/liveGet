@@ -47,7 +47,6 @@ go get gopkg.in/Knetic/govaluate.v3
 go get github.com/lxn/win
 go get github.com/inconshreveable/go-update
 go get github.com/Baozisoftware/GoldenDaemon
-go get github.com/Baozisoftware/golibraries
 if [ "$1" = "init" ]; then
 	DONE
 fi
@@ -59,6 +58,9 @@ SPATH=$GOPATH/src/$PNAME
 git clone $GPATH $SPATH
 cd $SPATH
 git pull
+cd $GOPATH/src/github.com/Baozisoftware
+git clone github.com/Baozisoftware/golibraries
+git checkout 91a9f7051cb37b11b3bd7bd16ffe0875e0e7de2e
 cd $CPATH
 
 
