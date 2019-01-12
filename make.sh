@@ -34,33 +34,39 @@ DONE()
 	exit 0
 }
 
+if [ "$GOPATH" = "" ]; then 
+	GOPATH=~/go
+fi
+
+mkdir -p $GOPATH/src/github.com/Baozisoftware
+cd $GOPATH/src/github.com/Baozisoftware
+git clone https://github.com/Baozisoftware/golibraries
+cd $GOPATH/src/github.com/Baozisoftware/golibraries
+git checkout 91a9f7051cb37b11b3bd7bd16ffe0875e0e7de2e
+cd $GOPATH/src/github.com/Baozisoftware
+git clone https://github.com/Baozisoftware/qrcode-terminal-go
+git clone https://github.com/Baozisoftware/GoldenDaemon
+
 #init
 echo Initing...
 go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
 go get github.com/PuerkitoBio/goquery
 go get github.com/pkg/browser
-go get github.com/Baozisoftware/qrcode-terminal-go
 go get github.com/mattn/go-isatty
 go get github.com/lxn/walk
 go get github.com/dkua/go-ico
 go get gopkg.in/Knetic/govaluate.v3
 go get github.com/lxn/win
 go get github.com/inconshreveable/go-update
-go get github.com/Baozisoftware/GoldenDaemon
 if [ "$1" = "init" ]; then
 	DONE
 fi
-if [ "$GOPATH" = "" ]; then 
-	GOPATH=~/go
-fi
+
 PATH=$PATH:$GOPATH/bin
 SPATH=$GOPATH/src/$PNAME
 git clone $GPATH $SPATH
 cd $SPATH
 git pull
-cd $GOPATH/src/github.com/Baozisoftware
-git clone github.com/Baozisoftware/golibraries
-git checkout 91a9f7051cb37b11b3bd7bd16ffe0875e0e7de2e
 cd $CPATH
 
 
